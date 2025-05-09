@@ -1,0 +1,214 @@
+﻿//using System;
+//using LMS.Data;
+//using LMS.Models;
+//using Microsoft.AspNetCore.Mvc;
+//using Microsoft.EntityFrameworkCore;
+
+//namespace LMS.Controllers
+//{
+//    public class AdminController : Controller
+//    {
+//        private readonly AppDbContext _context;
+
+//        public AdminController(AppDbContext context)
+//        {
+//            _context = context;
+//        }
+
+//        private bool IsAdmin()
+//        {
+//            var isAdmin = HttpContext.Session.GetString("IsAdmin");
+//            return isAdmin != null && isAdmin == "True";
+//        }
+
+//        // GET: /Admin/UserList
+//        public IActionResult UserList()
+//        {
+//            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+
+//            var users = _context.ApplicationUsers.ToList();
+//            return View(users);
+//        }
+
+//        // GET: /Admin/AddUser
+//        public IActionResult AddUser()
+//        {
+//            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+
+//            return View();
+//        }
+
+//        // POST: /Admin/AddUser
+//        [HttpPost]
+//        public IActionResult AddUser(ApplicationUser user)
+//        {
+//            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+
+//            if (ModelState.IsValid)
+//            {
+//                _context.ApplicationUsers.Add(user);
+//                _context.SaveChanges();
+//                return RedirectToAction("UserList");
+//            }
+//            return View(user);
+//        }
+
+//        // GET: /Admin/EditUser/{id}
+//        public IActionResult EditUser(int id)
+//        {
+//            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+
+//            var user = _context.ApplicationUsers.Find(id);
+//            if (user == null) return NotFound();
+
+//            return View(user);
+//        }
+
+//        // POST: /Admin/EditUser
+//        [HttpPost]
+//        public IActionResult EditUser(ApplicationUser updatedUser)
+//        {
+//            if (!IsAdmin()) return RedirectToAction("Login", "Account");
+
+//            var user = _context.ApplicationUsers.Find(updatedUser.Id);
+//            if (user != null)
+//            {
+//                user.Name = updatedUser.Name;
+//                user.Username = updatedUser.Username;
+//                user.Password = updatedUser.Password;
+//                user.Email = updatedUser.Email;
+//                user.ContactNumber = updatedUser.ContactNumber;
+//                user.IsAdmin = updatedUser.IsAdmin;
+
+//                _context.SaveChanges();
+//                return RedirectToAction("UserList");
+//            }
+//            return View(updatedUser);
+//        }
+//    }
+//}
+
+
+using System.Linq;
+using LMS.Data;
+using LMS.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace LMS.Controllers
+{
+    public class AdminController : Controller
+    {
+        private readonly AppDbContext _context;
+
+        public AdminController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        // Check if the current user is an admin
+        private bool IsAdmin()
+        {
+            var isAdmin = HttpContext.Session.GetString("IsAdmin");
+            return isAdmin != null && bool.TryParse(isAdmin, out var result) && result;
+        }
+
+        // GET: /Admin/Login
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        // POST: /Admin/Login
+        [HttpPost]
+        public IActionResult Login(string username, string password)
+        {
+            var admin = _context.ApplicationUsers
+                .FirstOrDefault(u => u.Username == username && u.Password == password && u.IsAdmin);
+
+            if (admin != null)
+            {
+                HttpContext.Session.SetString("IsAdmin", "True");
+                HttpContext.Session.SetString("AdminName", admin.Name);
+                return RedirectToAction("UserList");
+            }
+
+            ViewBag.Error = "Invalid admin credentials.";
+            return View();
+        }
+
+        // GET: /Admin/Logout
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Remove("IsAdmin");
+            HttpContext.Session.Remove("AdminName");
+            return RedirectToAction("Login");
+        }
+
+        // GET: /Admin/UserList
+        public IActionResult UserList()
+        {
+            if (!IsAdmin()) return RedirectToAction("Login");
+
+            var users = _context.ApplicationUsers.ToList();
+            return View(users);
+        }
+
+        // GET: /Admin/AddUser
+        public IActionResult AddUser()
+        {
+            if (!IsAdmin()) return RedirectToAction("Login");
+
+            return View();
+        }
+
+        // POST: /Admin/AddUser
+        [HttpPost]
+        public IActionResult AddUser(ApplicationUser user)
+        {
+            if (!IsAdmin()) return RedirectToAction("Login");
+
+            if (ModelState.IsValid)
+            {
+                user.IsAdmin = false;
+                _context.ApplicationUsers.Add(user);
+                _context.SaveChanges();
+                return RedirectToAction("UserList");
+            }
+            return View(user);
+        }
+
+        // GET: /Admin/EditUser/{id}
+        public IActionResult EditUser(int id)
+        {
+            if (!IsAdmin()) return RedirectToAction("Login");
+
+            var user = _context.ApplicationUsers.Find(id);
+            if (user == null) return RedirectToAction("UserList");
+
+            return View(user);
+        }
+
+        // POST: /Admin/EditUser
+        [HttpPost]
+        public IActionResult EditUser(ApplicationUser updatedUser)
+        {
+            if (!IsAdmin()) return RedirectToAction("Login");
+
+            var user = _context.ApplicationUsers.Find(updatedUser.Id);
+            if (user != null)
+            {
+                user.Name = updatedUser.Name;
+                user.Username = updatedUser.Username;
+                user.Password = updatedUser.Password;
+                user.Email = updatedUser.Email;
+                user.ContactNumber = updatedUser.ContactNumber;
+                user.IsAdmin = updatedUser.IsAdmin;
+
+                _context.SaveChanges();
+                return RedirectToAction("UserList");
+            }
+            return View(updatedUser);
+        }
+    }
+}
