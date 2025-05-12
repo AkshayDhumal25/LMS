@@ -1,0 +1,38 @@
+﻿@model IEnumerable<LMS.Models.Book>
+
+@{
+    ViewData["Title"] = "Book List";
+}
+
+<h2>Book List</h2>
+
+<a href="/Book/Add" class="btn btn-primary mb-3">Add New Book</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>ISBN</th>
+            <th>Category</th>
+            <th>Total Copies</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var book in Model)
+        {
+            <tr>
+                <td>@book.Title</td>
+                <td>@book.Author</td>
+                <td>@book.ISBN</td>
+                <td>@book.Category</td>
+                <td>@book.TotalCopies</td>
+                <td>
+                    <a href="/Book/Edit/@book.Id" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="/Book/Delete/@book.Id" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

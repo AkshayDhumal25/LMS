@@ -130,9 +130,8 @@ namespace LMS.Controllers
             {
                 HttpContext.Session.SetString("IsAdmin", "True");
                 HttpContext.Session.SetString("AdminName", admin.Name);
-                return RedirectToAction("UserList");
+                return RedirectToAction("Dashboard"); // ✅ Correct redirect
             }
-
             ViewBag.Error = "Invalid admin credentials.";
             return View();
         }
@@ -210,5 +209,34 @@ namespace LMS.Controllers
             }
             return View(updatedUser);
         }
+
+
+        public IActionResult DeleteUser(int id)
+        {
+            var user = _context.ApplicationUsers.Find(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            _context.ApplicationUsers.Remove(user);
+            _context.SaveChanges();
+
+            return RedirectToAction("UserList");
+        }
+
+
+
+
+        public IActionResult Dashboard()
+        {
+            if (!IsAdmin()) return RedirectToAction("Login");
+            return View();
+        }
+
+        
+
+
+
     }
 }

@@ -12,5 +12,8 @@ namespace LMS.Data
 
         // DbSet for ApplicationUser table
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+
+        public DbSet<Book> Books { get; set; }
+
     }
 }
