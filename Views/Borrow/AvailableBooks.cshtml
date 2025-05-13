@@ -1,0 +1,110 @@
+﻿@* @{ *@
+@*     ViewData["Title"] = "Available Books"; *@
+@* } *@
+
+@* <h2>Available Books</h2> *@
+
+@* <table class="table table-striped"> *@
+@*     <thead> *@
+@*         <tr> *@
+@*             <th>Title</th> *@
+@*             <th>Author</th> *@
+@*             <th>ISBN</th> *@
+@*             <th>Available Copies</th> *@
+@*             <th>Action</th> *@
+@*         </tr> *@
+@*     </thead> *@
+@*     <tbody> *@
+@*         @foreach (var book in Model) *@
+@*         { *@
+@*             <tr> *@
+@*                 <td>@book.Title</td> *@
+@*                 <td>@book.Author</td> *@
+@*                 <td>@book.ISBN</td> *@
+@*                 <td>@book.TotalCopies</td> *@
+@*                 <td> *@
+@*                     @if (book.TotalCopies > 0) *@
+@*                     { *@
+@*                         <a href="/Borrow/BorrowBook/@book.Id" class="btn btn-success">Borrow</a> *@
+@*                     } *@
+@*                     else *@
+@*                     { *@
+@*                         <span class="text-danger">Unavailable</span> *@
+@*                     } *@
+@*                 </td> *@
+@*             </tr> *@
+@*         } *@
+@*     </tbody> *@
+@* </table> *@
+
+@* <a href="/Account/Profile" class="btn btn-secondary">Back to Home</a> *@
+
+@model IEnumerable<LMS.Models.Book>
+
+<h2>Available Books</h2>
+
+<form method="get" asp-action="AvailableBooks">
+    <div class="form-group">
+        <input type="text" name="searchQuery" class="form-control" placeholder="Search by title, author, or category" />
+    </div>
+    <button type="submit" class="btn btn-primary my-2">Search</button>
+</form>
+
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>ISBN</th>
+            <th>Category</th>
+            <th>Total Copies</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var book in Model)
+        {
+            <tr>
+                <td>@book.Title</td>
+                <td>@book.Author</td>
+                <td>@book.ISBN</td>
+                <td>@book.Category</td>
+                <td>@book.TotalCopies</td>
+                <td>
+                    @if (book.TotalCopies > 0)
+                    {
+                        <a href="/Borrow/BorrowBook/@book.Id" class="btn btn-success">Borrow</a>
+                    }
+                    else
+                    {
+                        <button class="btn btn-secondary" disabled>Not Available</button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <div>
+        Page @ViewBag.CurrentPage of @Math.Ceiling((double)ViewBag.TotalBooks / ViewBag.PageSize)
+    </div>
+    <div>
+        @if (ViewBag.CurrentPage > 1)
+        {
+            <a class="btn btn-sm btn-secondary"
+               asp-action="AvailableBooks"
+               asp-route-pageNumber="@(ViewBag.CurrentPage - 1)"
+               asp-route-searchQuery="@ViewBag.SearchQuery">Previous</a>
+        }
+        @if ((ViewBag.CurrentPage * ViewBag.PageSize) < ViewBag.TotalBooks)
+        {
+            <a class="btn btn-sm btn-secondary"
+               asp-action="AvailableBooks"
+               asp-route-pageNumber="@(ViewBag.CurrentPage + 1)"
+               asp-route-searchQuery="@ViewBag.SearchQuery">Next</a>
+        }
+    </div>
+</div>
+

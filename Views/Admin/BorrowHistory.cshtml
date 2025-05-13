@@ -1,0 +1,29 @@
+﻿@model List<BorrowRecord>
+
+<h2>Borrow History</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>User ID</th>
+            <th>User Name</th>
+            <th>Book Title</th>
+            <th>Borrowed On</th>
+            <th>Returned On</th>
+            <th>Is Returned</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var record in Model)
+        {
+            <tr>
+                <td>@record.UserId</td>
+                <td>@record.User.Name</td>
+                <td>@record.Book.Title</td>
+                <td>@record.BorrowedAt.ToShortDateString()</td>
+                <td>@(record.IsReturned ? record.ReturnedAt?.ToShortDateString() : "Not returned")</td>
+                <td>@(record.IsReturned ? "Yes" : "No")</td>
+            </tr>
+        }
+    </tbody>
+</table>

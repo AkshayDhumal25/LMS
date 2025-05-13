@@ -29,11 +29,39 @@ namespace LMS.Controllers
         }
 
         // GET: /Book/Index
-        public IActionResult Index()
+        //public IActionResult Index()
+        //{
+        //    var books = _context.Books.ToList();
+        //    return View(books);
+        //}
+        public IActionResult Index(string searchQuery, int pageNumber = 1, int pageSize = 10)
         {
-            var books = _context.Books.ToList();
+            var booksQuery = _context.Books.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                booksQuery = booksQuery.Where(b =>
+                    b.Title.Contains(searchQuery) ||
+                    b.Author.Contains(searchQuery) ||
+                    b.Category.Contains(searchQuery)
+                );
+            }
+
+            var totalBooks = booksQuery.Count();
+
+            var books = booksQuery
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.CurrentPage = pageNumber;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalBooks = totalBooks;
+            ViewBag.SearchQuery = searchQuery;
+
             return View(books);
         }
+
 
         // GET: /Book/Add
         public IActionResult Add()

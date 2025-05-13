@@ -14,6 +14,6 @@ namespace LMS.Data
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
 
         public DbSet<Book> Books { get; set; }
-
+        public DbSet<BorrowRecord> BorrowRecords { get; set; }
     }
 }

@@ -5,8 +5,26 @@
 }
 
 <h2>Book List</h2>
+<div class="d-flex justify-content-end mb-3">
+    <a href="@Url.Action("ExportBooksToCsv", "Admin")" class="btn btn-sm btn-success">Download CSV</a>
+    
+</div>
+
+
 
 <a href="/Book/Add" class="btn btn-primary mb-3">Add New Book</a>
+@* <a href="@Url.Action("ExportBooksToCsv", "Admin")" class="btn btn-sm btn-success">Download CSV</a> *@
+
+<form method="get" asp-action="Index">
+    <div class="input-group mb-3">
+        <input type="text" name="searchQuery" class="form-control" placeholder="Search books..."
+               value="@ViewBag.SearchQuery" />
+        <div class="input-group-append">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </div>
+    
+</form>
 
 <table class="table table-bordered">
     <thead>
@@ -36,3 +54,31 @@
         }
     </tbody>
 </table>
+
+
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <div>
+        Page @ViewBag.CurrentPage of @Math.Ceiling((double)ViewBag.TotalBooks / ViewBag.PageSize)
+    </div>
+    
+    <div>
+        @if (ViewBag.CurrentPage > 1)
+        {
+            <a class="btn btn-sm btn-secondary"
+               asp-action="Index"
+               asp-route-pageNumber="@(ViewBag.CurrentPage - 1)"
+               asp-route-searchQuery="@ViewBag.SearchQuery">Previous</a>
+        }
+        @if ((ViewBag.CurrentPage * ViewBag.PageSize) < ViewBag.TotalBooks)
+        {
+            <a class="btn btn-sm btn-secondary"
+               asp-action="Index"
+               asp-route-pageNumber="@(ViewBag.CurrentPage + 1)"
+               asp-route-searchQuery="@ViewBag.SearchQuery">Next</a>
+        }
+    </div>
+
+    
+
+</div>
+

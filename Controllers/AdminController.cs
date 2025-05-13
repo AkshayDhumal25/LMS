@@ -90,10 +90,15 @@
 
 
 using System.Linq;
+using System.Text;
 using LMS.Data;
 using LMS.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
+
+
 
 namespace LMS.Controllers
 {
@@ -234,8 +239,40 @@ namespace LMS.Controllers
             return View();
         }
 
-        
 
+        // AdminController.cs
+
+        public IActionResult BorrowHistory()
+        {
+            // Get all borrow records with user and book details
+            var borrowHistory = _context.BorrowRecords
+                .Include(b => b.User)  // Include user details
+                .Include(b => b.Book)  // Include book details
+                .ToList();
+
+            return View(borrowHistory);  // Return the data to the view
+        }
+
+
+        // Export to CSV
+        public IActionResult ExportBooksToCsv()
+        {
+            var books = _context.Books.ToList();
+
+            var csvBuilder = new StringBuilder();
+            csvBuilder.AppendLine("Id,Title,Author,ISBN,Category,TotalCopies");
+
+            foreach (var book in books)
+            {
+                csvBuilder.AppendLine($"{book.Id},{book.Title},{book.Author},{book.ISBN},{book.Category},{book.TotalCopies}");
+            }
+
+            byte[] buffer = Encoding.UTF8.GetBytes(csvBuilder.ToString());
+
+            return File(buffer, "text/csv", "books.csv");
+        }
+
+        
 
 
     }

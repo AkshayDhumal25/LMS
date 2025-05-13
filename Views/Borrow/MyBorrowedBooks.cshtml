@@ -1,0 +1,68 @@
+﻿@* @model List<BorrowRecord> *@
+
+@* <h2>My Borrowed Books</h2> *@
+
+@* <table class="table"> *@
+@*     <thead> *@
+@*         <tr> *@
+@*             <th>Title</th> *@
+@*             <th>Borrowed On</th> *@
+@*             <th>Returned On</th> *@
+@*             <th>Action</th> *@
+@*         </tr> *@
+@*     </thead> *@
+@*     <tbody> *@
+@*         @foreach (var borrow in Model) *@
+@*         { *@
+@*             <tr> *@
+@*                 <td>@borrow.Book.Title</td> *@
+@*                 <td>@borrow.BorrowedAt.ToShortDateString()</td> *@
+@*                 <td>@(borrow.IsReturned ? borrow.ReturnedAt?.ToShortDateString() : "Not returned")</td> *@
+@*                 <td> *@
+@*                     @if (!borrow.IsReturned) *@
+@*                     { *@
+@*                         <a href="/Borrow/ReturnBook?borrowId=@borrow.Id" class="btn btn-sm btn-warning">Return</a> *@
+@*                     } *@
+@*                 </td> *@
+@*             </tr> *@
+@*         } *@
+@*     </tbody> *@
+@* </table> *@
+
+
+@model List<BorrowRecord>
+
+<h2>My Borrowed Books</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Borrowed On</th>
+            <th>Returned On</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var borrow in Model)
+        {
+            <tr>
+                <td>@borrow.Book.Title</td>
+                <td>@borrow.BorrowedAt.ToShortDateString()</td>
+                <td>@(borrow.IsReturned ? borrow.ReturnedAt?.ToShortDateString() : "Not returned")</td>
+                <td>
+                    @if (!borrow.IsReturned)
+                    {
+                        <form method="post" asp-action="ReturnBook" asp-route-id="@borrow.Id">
+                            <button type="submit" class="btn btn-sm btn-warning">Return</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="text-success fw-bold">Returned</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
