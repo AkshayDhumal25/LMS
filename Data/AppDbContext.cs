@@ -15,5 +15,9 @@ namespace LMS.Data
 
         public DbSet<Book> Books { get; set; }
         public DbSet<BorrowRecord> BorrowRecords { get; set; }
+
+        public DbSet<Row> Rows { get; set; }
+        public DbSet<Shelf> Shelves { get; set; }
+        public DbSet<Section> Sections { get; set; }
     }
 }

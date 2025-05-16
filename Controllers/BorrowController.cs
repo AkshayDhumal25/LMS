@@ -115,6 +115,42 @@ namespace LMS.Controllers
         //}
 
 
+        //public IActionResult AvailableBooks(string searchQuery, int pageNumber = 1, int pageSize = 5)
+        //{
+        //    // Prevent caching
+        //    Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+        //    Response.Headers["Pragma"] = "no-cache";
+        //    Response.Headers["Expires"] = "0";
+
+        //    var books = _context.Books.AsQueryable();
+
+        //    // Apply search filter
+        //    if (!string.IsNullOrEmpty(searchQuery))
+        //    {
+        //        books = books.Where(b =>
+        //            b.Title.Contains(searchQuery) ||
+        //            b.Author.Contains(searchQuery) ||
+        //            b.Category.Contains(searchQuery)
+        //        );
+        //    }
+
+        //    // Get total count after filtering
+        //    var totalBooks = books.Count();
+
+        //    // Apply pagination
+        //    books = books
+        //        .OrderBy(b => b.Title)
+        //        .Skip((pageNumber - 1) * pageSize)
+        //        .Take(pageSize);
+
+        //    // Send pagination data to view
+        //    ViewBag.CurrentPage = pageNumber;
+        //    ViewBag.PageSize = pageSize;
+        //    ViewBag.TotalBooks = totalBooks;
+        //    ViewBag.SearchQuery = searchQuery;
+
+        //    return View(books.ToList());
+        //}
         public IActionResult AvailableBooks(string searchQuery, int pageNumber = 1, int pageSize = 5)
         {
             // Prevent caching
@@ -122,35 +158,45 @@ namespace LMS.Controllers
             Response.Headers["Pragma"] = "no-cache";
             Response.Headers["Expires"] = "0";
 
-            var books = _context.Books.AsQueryable();
+            // Query books with navigation properties included
+            var booksQuery = _context.Books
+                .Include(b => b.Row)
+                    .ThenInclude(r => r.Shelf)
+                        .ThenInclude(s => s.Section)
+                .AsQueryable();
 
-            // Apply search filter
-            if (!string.IsNullOrEmpty(searchQuery))
+            //Apply search filter(case -insensitive)
+            if (!string.IsNullOrWhiteSpace(searchQuery))
             {
-                books = books.Where(b =>
-                    b.Title.Contains(searchQuery) ||
-                    b.Author.Contains(searchQuery) ||
-                    b.Category.Contains(searchQuery)
+                string lowerSearch = searchQuery.ToLower();
+
+                booksQuery = booksQuery.Where(b =>
+                    b.Title.ToLower().Contains(lowerSearch) ||
+                    b.Author.ToLower().Contains(lowerSearch) ||
+                    b.Category.ToLower().Contains(lowerSearch)
                 );
             }
 
             // Get total count after filtering
-            var totalBooks = books.Count();
+            int totalBooks = booksQuery.Count();
 
             // Apply pagination
-            books = books
+            var pagedBooks = booksQuery
                 .OrderBy(b => b.Title)
                 .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize);
+                .Take(pageSize)
+                .ToList();
 
-            // Send pagination data to view
+            // Send pagination and search info via ViewBag
             ViewBag.CurrentPage = pageNumber;
             ViewBag.PageSize = pageSize;
             ViewBag.TotalBooks = totalBooks;
             ViewBag.SearchQuery = searchQuery;
 
-            return View(books.ToList());
+            return View(pagedBooks);
         }
+
+
 
 
         // Borrow a book

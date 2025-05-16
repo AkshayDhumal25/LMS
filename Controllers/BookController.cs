@@ -15,6 +15,8 @@
 using LMS.Data;
 using LMS.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 namespace LMS.Controllers
@@ -63,30 +65,81 @@ namespace LMS.Controllers
         }
 
 
+        //GET: /Book/Add
+        //public IActionResult Add()
+        //{
+        //    return View();
+        //}
+
+        ////POST: /Book/Add
+        //[HttpPost]
+        // public IActionResult Add(Book book)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        _context.Books.Add(book);
+        //        _context.SaveChanges();
+        //        return RedirectToAction("Index");
+        //    }
+        //    return View(book);
+        //}
+
+        // BookController.cs
+
         // GET: /Book/Add
         public IActionResult Add()
         {
+            ViewBag.Rows = _context.Rows
+                .Select(r => new SelectListItem
+                {
+                    Value = r.Id.ToString(),
+                    Text = r.Name
+                }).ToList();
+
             return View();
         }
 
         // POST: /Book/Add
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Add(Book book)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Books.Add(book);
-                _context.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            return View(book);
-        }
+            //if (!ModelState.IsValid)
+            //{
+            //    // Re-populate dropdown on validation error
+            //    ViewBag.Rows = _context.Rows
+            //        .Select(r => new SelectListItem
+            //        {
+            //            Value = r.Id.ToString(),
+            //            Text = r.Name
+            //        }).ToList();
 
-        // GET: /Book/Edit/{id}
+            //    return View(book);
+            //}
+
+            // ✅ Raw SQL Insert
+
+            _context.Database.ExecuteSqlRaw(
+                "INSERT INTO Books (Title, Author, ISBN, Category, TotalCopies, RowId) VALUES ({0}, {1}, {2}, {3}, {4}, {5})",
+                book.Title, book.Author, book.ISBN, book.Category, book.TotalCopies, book.RowId
+            );
+
+            return RedirectToAction("Index");
+        }
+        [HttpGet]
         public IActionResult Edit(int id)
         {
             var book = _context.Books.Find(id);
             if (book == null) return NotFound();
+
+            ViewBag.Rows = _context.Rows
+                .Select(r => new SelectListItem
+                {
+                    Value = r.Id.ToString(),
+                    Text = r.Name
+                }).ToList();
+
+
             return View(book);
         }
 
@@ -94,13 +147,13 @@ namespace LMS.Controllers
         [HttpPost]
         public IActionResult Edit(Book book)
         {
-            if (ModelState.IsValid)
-            {
+            
+            
                 _context.Books.Update(book);
                 _context.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            return View(book);
+               
+            
+            return RedirectToAction("Index");
         }
 
         // GET: /Book/Delete/{id}
@@ -113,5 +166,34 @@ namespace LMS.Controllers
             _context.SaveChanges();
             return RedirectToAction("Index");
         }
+
+        public IActionResult Create()
+        {
+            ViewBag.Sections = _context.Sections.ToList();
+            return View();
+        }
+
+        public JsonResult GetShelvesBySection(int id)
+        {
+            var shelves = _context.Shelves
+                .Where(s => s.SectionId == id)
+                .Select(s => new { s.Id, s.Name })
+                .ToList();
+
+            return Json(shelves);
+        }
+
+        public JsonResult GetRowsByShelf(int id)
+        {
+            var rows = _context.Rows
+                .Where(r => r.ShelfId == id)
+                .Select(r => new { r.Id, r.Name })
+                .ToList();
+
+            return Json(rows);
+        }
+
     }
 }
+
+
